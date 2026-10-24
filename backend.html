@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>USK SCHOOLMONEY - ระบบหลังบ้าน</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{--n:#12296b;--s:#455a87;--c:#003a70}*{box-sizing:border-box}
+body{margin:0;font-family:Prompt,sans-serif;color:var(--n)}[hidden]{display:none!important}
+input,select,textarea,button{font:inherit;color:inherit}
+input,select,textarea{border:2px solid var(--n);border-radius:14px;padding:7px 12px;background:#f8f8f8;max-width:100%}
+button{cursor:pointer}.bt{border:0;border-radius:20px;padding:8px 18px;background:var(--n);color:#fff}.g{background:#10b800}.r{background:#e8001c}.o{background:#fff;color:var(--n);border:2px solid var(--n)}
+#login{display:flex;min-height:100vh}#login>div{flex:1;padding:40px;display:flex;flex-direction:column;justify-content:center}
+.L{background:var(--n);color:#fff;align-items:center;text-align:center}.L img{max-width:80%;border-radius:14px}
+.R input{width:100%;margin:6px 0 14px}.R .bt{width:100%;background:#2f5cb0;font-size:1.2em;padding:12px}#clk{font-size:2.6em;font-weight:600}
+#app{display:flex;min-height:100vh}#side{width:260px;background:var(--s);color:#fff;border-radius:0 30px 30px 0;padding:20px;position:sticky;top:0;height:100vh;overflow:auto;flex-shrink:0}
+#side a{display:block;padding:10px;cursor:pointer;border-radius:10px}#side a.on,#side a:hover{background:rgba(255,255,255,.2)}
+.ph{width:56px;height:56px;border-radius:50%;background:linear-gradient(#bde3ff,#8aa800);flex-shrink:0}
+section{flex:1;min-width:0}header{background:var(--n);color:#fff;border-radius:0 0 30px 30px;padding:14px 24px;display:flex;align-items:center;gap:16px}
+.pad{padding:20px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.card{background:var(--c);color:#fff;border-radius:24px;padding:16px;cursor:pointer}.card b{font-size:2.8em}
+.box{border:2px solid var(--n);border-radius:20px;padding:14px;margin:10px 0;overflow:auto}
+table{border-collapse:collapse;width:100%}td,th{padding:6px 8px;text-align:left;white-space:nowrap}th{border-bottom:2px solid var(--n)}
+.tabs button{border:0;background:none;font-weight:600;padding:8px 14px;border-radius:20px}.tabs .on{border:2px solid var(--n);background:#f8f8f8}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:9}.mb{background:#fff;border-radius:20px;padding:20px;width:min(760px,94vw);max-height:90vh;overflow:auto}
+.big{max-width:100%;max-height:55vh;cursor:zoom-in}.big.z{max-height:none;cursor:zoom-out;width:200%;max-width:none}.zw{overflow:auto;max-height:60vh}
+.marq{overflow:hidden}.trk{display:flex;gap:14px;width:max-content;animation:mv 40s linear infinite}.marq:hover .trk{animation-play-state:paused}.trk div{text-align:center;cursor:pointer}.trk img{height:200px;border-radius:10px}@keyframes mv{to{transform:translateX(-50%)}}
+#bn{position:absolute;top:-6px;right:-6px;background:red;border-radius:50%;font-size:11px;min-width:18px;text-align:center;font-style:normal}
+#bd{position:absolute;right:0;top:40px;width:320px;background:#fff;color:var(--n);border-radius:14px;padding:10px;z-index:5;max-height:300px;overflow:auto}#bd div{padding:6px;cursor:pointer;border-bottom:1px solid #ddd}
+@media print{#side,header,.np{display:none!important}}
+@media(max-width:800px){#login{flex-direction:column}#side{position:fixed;z-index:5;left:-280px;transition:.2s}#side.open{left:0}}
+</style></head><body>
+<div id="login"><div class="L"><img id="logo" width="130" alt=""><h2>USK SCHOOLMONEY</h2><h1>โรงเรียนอุทยานศึกษากระบี่</h1>
+<p>ระบบสารสนเทศเพื่อการบริหารจัดการและวิเคราะห์ข้อมูลการเงินหอพักนักเรียน<br><small>(Student Dormitory Financial Management and Data Analysis Information System)</small></p><img id="ann" alt=""></div>
+<div class="R"><h1>ยินดีต้อนรับเข้าสู่ระบบ</h1><p>กรุณาเข้าสู่ระบบเพื่อดำเนินการต่อ</p><div id="clk"></div><p id="dt"></p>
+<label><b>ชื่อผู้ใช้งาน (Username)</b></label><input id="u" placeholder="ชื่อผู้ใช้งาน หรืออีเมล" autocomplete="username">
+<label><b>รหัสผ่าน (Password)</b></label><input id="p" type="password" placeholder="กรอกรหัสผ่าน....." autocomplete="current-password">
+<p id="err" style="color:red"></p><button class="bt" id="go">เข้าสู่ระบบ</button></div></div>
+<div id="app" hidden><aside id="side"><div style="display:flex;gap:10px;align-items:center;margin-bottom:14px"><div class="ph"></div><div><b id="un"></b><br><small>ฝ่ายดูแลระบบ</small></div></div><div id="nav"></div><br><button class="bt o" id="out" style="width:100%">ออกจากระบบ</button></aside>
+<section><header><button class="bt" id="mn">☰</button><h2 id="pt" style="flex:1;margin:0"></h2><span style="position:relative"><button class="bt" id="bell">🔔</button><i id="bn" hidden></i><div id="bd" hidden></div></span><span><b id="un2"></b><br><small>ฝ่ายดูแลระบบ</small></span><div class="ph"></div></header>
+<div class="pad"><div class="np" style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><b id="stamp"></b><button class="bt" id="rf">รีเฟรสข้อมูลล่าสุด</button></div><div id="main"></div></div></section></div>
+<div id="modal" hidden><div class="mb"></div></div>
+<script type="module">
+import {initializeApp,deleteApp} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged,createUserWithEmailAndPassword,updatePassword} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {getFirestore,collection,doc,getDoc,getDocs,setDoc,addDoc,updateDoc,deleteDoc,query,where,orderBy,limit,writeBatch,serverTimestamp,onSnapshot,arrayUnion} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import {createClient} from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm";
+const LOGO="",ANN="";/* ใส่ลิงก์โลโก้โรงเรียน และรูปประกาศหน้าล็อกอิน */
+const IDLE_MIN=30;/* ออกจากระบบอัตโนมัติเมื่อไม่ใช้งาน (นาที) */
+const cfg={apiKey:"AIzaSyCYzdTDDtasgznuTERAtFz4l_dk47eB42A",authDomain:"schoolmonnyusk.firebaseapp.com",projectId:"schoolmonnyusk",storageBucket:"schoolmonnyusk.firebasestorage.app",messagingSenderId:"1005787782841",appId:"1:1005787782841:web:46389eb63de7f65affc568"};
+const SB_URL="https://ihagihlmaquzaniegcfp.supabase.co",SB_ANON="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImloYWdpaGxtYXF1emFuaWVnY2ZwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI3Njc5NzgsImV4cCI6MjEwODM0Mzk3OH0.BVZ8LHRsJArrxWge7B69wjBzyWP8VqHGPoU6iKqSjlw",BUCKET="usk";
+const app=initializeApp(cfg),auth=getAuth(app),db=getFirestore(app),sb=createClient(SB_URL,SB_ANON);
+const $=s=>document.querySelector(s),esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const ST={notdue:['ยังไม่ถึงกำหนด','#6b7cff'],overdue:['ค้างชำระ','#e00000'],pending:['รอตรวจสอบ','#f5a623'],paid:['ชำระแล้ว','#2a9d5c'],partial:['ชำระบางส่วน','#c77d00'],rejected:['ปฏิเสธหลักฐาน','#c0392b'],need_info:['ต้องการข้อมูลเพิ่มเติม','#d68910'],cancelled:['ยกเลิกรายการ','#888']};
+const stl=s=>`<b style="color:${(ST[s]||ST.notdue)[1]}">${(ST[s]||ST.notdue)[0]}</b>`;
+const DORMS=['หอพักญะมาอะห์ชาย','หอพักญะมาอะห์หญิง','หอพักกีฬา','หอพักฮาฟิซอัลกุรอ่าน'];
+const MENU=[['dash','DASHBOARDS สรุป'],['stu','ข้อมูลนักเรียนทั้งหมด'],['bank','บอร์ดประชาสัมพันธ์/ธนาคาร'],['pay','ตรวจสอบค่าใช้จ่ายต่างๆ'],['slip','ตรวจสอบสลิปการโอน'],['gal','ภาพรวมสลิปการโอน'],['rep','ปริ้นรายงานข้อมูล'],['acc','สิทธิ์การเข้าถึง'],['log','ประวัติกิจกรรม']];
+const itemName=f=>f.type=='fee'?'ค่าธรรมเนียมหอพัก':'ค่าอาหาร '+f.month;
+const tm=t=>t?.toDate?t.toDate().toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'}):'-';
+let me=null,terms=[],termId=null,page='dash',pend=[],unsub=null,idle;
+const modal=h=>{$('#modal').hidden=false;$('#modal .mb').innerHTML=h};const closeM=()=>$('#modal').hidden=true;window.closeM=closeM;
+const ask=(t,h)=>new Promise(r=>{modal(`<h3>⚠ ${t}</h3><div style="max-height:45vh;overflow:auto">${h}</div><p><b style="color:red">ข้อควรระวัง:</b> โปรดทบทวนรายการของท่านก่อนบันทึกข้อมูล หากแน่ใจโปรดกดยืนยัน หากทำผิดพลาดโปรดกดยกเลิก (ท่านยังคงใช้สิทธิ์ปรับปรุงข้อมูลได้ตลอดเวลา)</p><button class="bt g" id="y">✔ ยืนยัน</button> <button class="bt r" id="n">✖ ยกเลิก</button>`);$('#y').onclick=()=>{closeM();r(true)};$('#n').onclick=()=>{closeM();r(false)}});
+const log=(action,detail,o,n,note)=>addDoc(collection(db,'logs'),{actor:me.username,uid:me.uid,action,detail:detail||'',old:o??null,new:n??null,note:note||'',at:serverTimestamp()});
+const up=async(file,folder)=>{const p=`${folder}/${Date.now()}_${Math.random().toString(36).slice(2,8)}.${file.name.split('.').pop()}`;const {error}=await sb.storage.from(BUCKET).upload(p,file,{contentType:file.type});if(error)throw error;return sb.storage.from(BUCKET).getPublicUrl(p).data.publicUrl};
+if(LOGO)$('#logo').src=LOGO;else $('#logo').hidden=true;if(ANN)$('#ann').src=ANN;else $('#ann').hidden=true;
+/* นาฬิกา real-time */
+setInterval(()=>{const d=new Date(),z=(n,l=2)=>String(n).padStart(l,'0');
+ if(!$('#login').hidden){$('#clk').textContent=`${z(d.getHours())} : ${z(d.getMinutes())} : ${z(d.getSeconds())}.${z(d.getMilliseconds(),3)} น.`;$('#dt').textContent=d.toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
+ else $('#stamp').textContent=`ข้อมูล ณ วันที่ : ${d.toLocaleDateString('th-TH',{day:'numeric',month:'long',year:'numeric'})} เวลา ${z(d.getHours())} : ${z(d.getMinutes())} : ${z(d.getSeconds())} น.`},50);
+/* เข้า/ออกระบบ */
+$('#go').onclick=async()=>{let u=$('#u').value.trim();if(!u)return;if(!u.includes('@'))u+='@usk.ac.th';$('#err').textContent='';try{await signInWithEmailAndPassword(auth,u,$('#p').value)}catch(e){$('#err').textContent='ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง'}};
+$('#p').onkeydown=e=>e.key=='Enter'&&$('#go').click();
+const out=async()=>{if(me){await log('ออกจากระบบ','ออกจากระบบการทำงานหลังบ้านสำเร็จ').catch(()=>{});}me=null;unsub&&unsub();await signOut(auth)};$('#out').onclick=out;
+const rst=()=>{clearTimeout(idle);if(me)idle=setTimeout(out,IDLE_MIN*60000)};['click','keydown','mousemove'].forEach(e=>addEventListener(e,rst));
+onAuthStateChanged(auth,async u=>{
+ if(!u){me=null;$('#app').hidden=true;$('#login').hidden=false;return}
+ if(me)return;const s=await getDoc(doc(db,'admins',u.uid));
+ if(!s.exists()||!s.data().active){await signOut(auth);$('#err').textContent='บัญชีนี้ไม่มีสิทธิ์เข้าใช้งาน หรือถูกปิดใช้งาน';return}
+ me={uid:u.uid,...s.data()};$('#login').hidden=true;$('#app').hidden=false;$('#un').textContent=$('#un2').textContent=me.username;
+ $('#nav').innerHTML=MENU.map(m=>`<a data-p="${m[0]}">${m[1]}</a>`).join('');$('#nav').onclick=e=>{const p=e.target.dataset.p;if(p){$('#side').classList.remove('open');go(p)}};
+ unsub=onSnapshot(query(collection(db,'payments'),where('status','==','pending')),q=>{pend=q.docs.map(d=>({id:d.id,...d.data()}));$('#bn').textContent=pend.length;$('#bn').hidden=!pend.length});
+ log('เข้าสู่ระบบ','เข้าสู่ระบบการทำงานหลังบ้านสำเร็จ');rst();go('dash')});
+$('#mn').onclick=()=>$('#side').classList.toggle('open');$('#rf').onclick=()=>go(page);
+$('#bell').onclick=()=>{const b=$('#bd');b.hidden=!b.hidden;b.innerHTML=pend.length?pend.map(p=>`<div data-i="${p.id}">${esc(p.studentName)} — ${esc(itemName(p))} <small>${tm(p.createdAt)}</small></div>`).join(''):'ไม่มีรายการรอตรวจสอบ';
+ b.onclick=async e=>{const i=e.target.closest('[data-i]')?.dataset.i;if(!i)return;b.hidden=true;await go('slip');const p=pend.find(x=>x.id==i);p&&detail(p)}};
+/* ภาคเรียน */
+const loadTerms=async()=>{terms=(await getDocs(collection(db,'terms'))).docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>b.year-a.year||String(a.term).localeCompare(a.term));if(!terms.find(t=>t.id==termId))termId=(terms.find(t=>t.isDefault)||terms[0]||{}).id||null};
+const termSel=()=>`<select id="ts">${terms.map(t=>`<option value="${t.id}" ${t.id==termId?'selected':''}>${esc(t.label)}</option>`).join('')||'<option value="">ยังไม่มีภาคเรียน</option>'}</select>`;
+const bindTs=()=>{const s=$('#ts');if(s)s.onchange=e=>{termId=e.target.value;go(page)}};
+const getStu=async()=>termId?(await getDocs(query(collection(db,'students'),where('termId','==',termId)))).docs.map(d=>({id:d.id,...d.data()})):[];
+const getFees=async()=>termId?(await getDocs(query(collection(db,'fees'),where('termId','==',termId)))).docs.map(d=>({id:d.id,...d.data()})):[];
+const csv=(rows,name)=>{const t='\ufeff'+rows.map(r=>r.map(c=>`"${String(c??'').replace(/"/g,'""')}"`).join(',')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download=name+'.csv';a.click()};
+const P={dash,stu,bank,pay,slip:()=>slip(0),gal:()=>slip(1),rep,acc,log:logs};
+async function go(p){page=p;document.querySelectorAll('#nav a').forEach(a=>a.classList.toggle('on',a.dataset.p==p));$('#pt').textContent=MENU.find(m=>m[0]==p)[1];$('#main').innerHTML='กำลังโหลด...';
+ try{await loadTerms();await P[p]();bindTs()}catch(e){$('#main').innerHTML='<p style="color:red">เกิดข้อผิดพลาด: '+esc(e.message)+'</p>'}}
+/* ===== Dashboard ===== */
+async function dash(){
+ const [S,F]=await Promise.all([getStu(),getFees()]),t=terms.find(x=>x.id==termId),M=t?.months||[];
+ const by=f=>{const ids=new Set(F.filter(f).map(x=>x.studentId));return S.filter(s=>ids.has(s.id))};
+ const cards=[['นักเรียนหอพักทั้งหมด',S],['นักเรียนที่รอตรวจสอบสถานะ',by(x=>x.status=='pending')],['นักเรียนที่ยังมีรายการค้างชำระ',by(x=>x.status=='overdue'||x.status=='partial')],['นักเรียนที่จ่ายค่าธรรมเนียมหอพักแล้ว',by(x=>x.type=='fee'&&x.status=='paid')],...M.map(m=>[`นักเรียนที่จ่ายค่าอาหารเดือน ${m} แล้ว`,by(x=>x.type=='meal'&&x.month==m&&x.status=='paid')])];
+ $('#main').innerHTML=`<p>${termSel()} <input id="fq" placeholder="ค้นหาชื่อนักเรียน"> <select id="fd"><option value="">ทุกประเภทหอพัก</option>${DORMS.map(d=>`<option>${d}</option>`).join('')}</select></p><div class="grid" id="cg"></div>
+ <h3>จัดการภาคเรียน / ปีการศึกษา</h3><div class="box"><select id="tn"><option value="1">ภาคเรียนที่ 1</option><option value="2">ภาคเรียนที่ 2</option><option value="3">ภาคเรียนที่ 3</option><option value="พิเศษ">ภาคเรียนพิเศษ</option></select> <input id="ty" size="10" placeholder="ปีการศึกษา 2569"> <input id="tmo" size="45" placeholder="เดือนที่เก็บค่าอาหาร (สูงสุด 6) คั่นด้วย , เช่น ตุลาคม,พฤศจิกายน"> <button class="bt" id="ta">เพิ่มภาคเรียน</button>
+ <table><tr><th>ภาคเรียน<th>เดือน<th>แสดงในระบบผู้ปกครอง<th>ค่าเริ่มต้น</tr>${terms.map(x=>`<tr><td>${esc(x.label)}<td>${esc((x.months||[]).join(', '))}<td><input type="checkbox" data-v="${x.id}" ${x.visible?'checked':''}><td><input type="radio" name="df" data-d="${x.id}" ${x.isDefault?'checked':''}></tr>`).join('')}</table></div>`;
+ const draw=()=>{const q=$('#fq').value,d=$('#fd').value,ok=s=>s.name.includes(q)&&(!d||s.dorm==d);
+  $('#cg').innerHTML=cards.map((c,i)=>{const n=c[1].filter(ok).length,tot=S.filter(ok).length;return `<div class="card" data-i="${i}">${c[0]}<br><b>${n}</b> คน<br><small>${tot?(n*100/tot).toFixed(2):'0.00'} %</small></div>`}).join('');
+  document.querySelectorAll('.card').forEach(c=>c.onclick=()=>{const k=cards[c.dataset.i];modal(`<h3>${k[0]}</h3><table>${k[1].filter(ok).map(s=>`<tr><td>${esc(s.name)}<td>${esc(s.dorm)}<td>${esc(s.level)}`).join('')}</table><p><button class="bt o" onclick="closeM()">ปิด</button></p>`)})};
+ $('#fq').oninput=$('#fd').onchange=draw;draw();
+ $('#ta').onclick=async()=>{const n=$('#tn').value,y=+$('#ty').value,mo=$('#tmo').value.split(',').map(s=>s.trim()).filter(Boolean).slice(0,6);if(!y)return alert('กรุณาระบุปีการศึกษา');
+  const label=`ภาคเรียนที่ ${n} ปีการศึกษา ${y}`;if(n=='พิเศษ')label.replace('ที่ พิเศษ','พิเศษ');await setDoc(doc(db,'terms',`${y}-${n}`),{label:n=='พิเศษ'?`ภาคเรียนพิเศษ ปีการศึกษา ${y}`:label,term:n,year:y,months:mo,visible:true,isDefault:!terms.length},{merge:true});await log('เปลี่ยนการตั้งค่าที่สำคัญ','เพิ่ม/แก้ไข '+label);go('dash')};
+ document.querySelectorAll('[data-v]').forEach(i=>i.onchange=async()=>{await updateDoc(doc(db,'terms',i.dataset.v),{visible:i.checked});log('เปลี่ยนการตั้งค่าที่สำคัญ','เปิด/ปิดการแสดงภาคเรียน '+i.dataset.v,!i.checked,i.checked)});
+ document.querySelectorAll('[data-d]').forEach(i=>i.onchange=async()=>{const b=writeBatch(db);terms.forEach(x=>b.update(doc(db,'terms',x.id),{isDefault:x.id==i.dataset.d}));await b.commit();log('เปลี่ยนการตั้งค่าที่สำคัญ','ตั้งภาคเรียนเริ่มต้น '+i.dataset.d)})}
+/* ===== นักเรียน ===== */
+async function addStu(s,t){const b=writeBatch(db),r=doc(collection(db,'students'));b.set(r,{name:s.name,level:s.level||'',dorm:s.dorm,termId:t.id,createdAt:serverTimestamp()});
+ [{type:'fee',month:''},...(t.months||[]).map(m=>({type:'meal',month:m}))].forEach((it,i)=>b.set(doc(db,'fees',r.id+'_'+i),{studentId:r.id,studentName:s.name,dorm:s.dorm,termId:t.id,...it,amount:0,paid:0,status:'notdue',updatedAt:serverTimestamp()}));await b.commit()}
+async function stu(){
+ let S=await getStu(),dorm=DORMS[0];const t=terms.find(x=>x.id==termId);
+ $('#main').innerHTML=`<div class="box"><input id="q" placeholder="ค้นหาชื่อนักเรียน"> <input id="lv" placeholder="ระดับชั้น เช่น ม.6/1"> ${termSel()} <button class="bt" id="ad">เพิ่มนักเรียน</button> <button class="bt" id="im">เพิ่มจาก Excel</button><input type="file" id="xf" accept=".xlsx,.xls,.csv" hidden>
+ <div class="tabs" id="dt">${DORMS.map((d,i)=>`<button data-d="${d}" class="${i?'':'on'}">${d}</button>`).join('')}</div><div id="tb"></div></div>`;
+ const draw=()=>{const q=$('#q').value,l=$('#lv').value;$('#tb').innerHTML=`<table><tr><th>ชื่อ - นามสกุล<th>ระดับชั้น<th></tr>${S.filter(s=>s.dorm==dorm&&s.name.includes(q)&&(s.level||'').includes(l)).map(s=>`<tr><td>${esc(s.name)}<td>${esc(s.level)}<td><button class="bt o" data-e="${s.id}">แก้ไข</button> <button class="bt r" data-x="${s.id}">ลบ</button></tr>`).join('')}</table>`};draw();
+ $('#q').oninput=$('#lv').oninput=draw;$('#dt').onclick=e=>{if(!e.target.dataset.d)return;dorm=e.target.dataset.d;document.querySelectorAll('#dt button').forEach(b=>b.classList.toggle('on',b==e.target));draw()};
+ const pickDorm=m=>prompt(m+'\nพิมพ์เลขประเภทหอพัก:\n'+DORMS.map((d,i)=>`${i+1}=${d}`).join('\n'),DORMS.indexOf(dorm)+1);
+ $('#ad').onclick=async()=>{if(!t)return alert('กรุณาเพิ่มภาคเรียนก่อน');const n=prompt('ชื่อ - นามสกุล');if(!n)return;const lv=prompt('ระดับชั้น','');const d=DORMS[pickDorm('เพิ่มเข้า')-1];if(!d)return;await addStu({name:n.trim(),level:lv,dorm:d},t);await log('เพิ่มข้อมูลนักเรียน',n+' / '+d+' / '+t.label);go('stu')};
+ $('#im').onclick=()=>{if(!t)return alert('กรุณาเพิ่มภาคเรียนก่อน');$('#xf').click()};
+ $('#xf').onchange=async e=>{const f=e.target.files[0];if(!f)return;const d=DORMS[pickDorm('นำเข้าสู่')-1];if(!d)return;const wb=XLSX.read(await f.arrayBuffer()),rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]).map(r=>({name:String(r['ชื่อ-นามสกุล']||r['ชื่อ - นามสกุล']||r['ชื่อ']||r.name||'').trim(),level:String(r['ระดับชั้น']||r.level||'')})).filter(r=>r.name);
+  if(!await ask('นำเข้านักเรียนจาก Excel',`${rows.length} รายการ → ${d} / ${esc(t.label)}<br>(คอลัมน์: ชื่อ-นามสกุล, ระดับชั้น)`))return;
+  const have=new Set(S.filter(s=>s.dorm==d).map(s=>s.name));let n=0;for(const r of rows){if(have.has(r.name))continue;await addStu({...r,dorm:d},t);n++}await log('เพิ่มข้อมูลนักเรียน',`นำเข้า Excel ${n} รายการ → ${d} / ${t.label}`);alert('นำเข้าสำเร็จ '+n+' รายการ (ข้ามรายชื่อซ้ำ)');go('stu')};
+ $('#tb').onclick=async e=>{const s=S.find(x=>x.id==(e.target.dataset.e||e.target.dataset.x));if(!s)return;
+  if(e.target.dataset.e){const n=prompt('ชื่อ - นามสกุล',s.name),lv=prompt('ระดับชั้น',s.level||'');if(!n)return;const fs=await getDocs(query(collection(db,'fees'),where('studentId','==',s.id))),b=writeBatch(db);b.update(doc(db,'students',s.id),{name:n.trim(),level:lv||''});fs.docs.forEach(d=>b.update(d.ref,{studentName:n.trim()}));await b.commit();await log('แก้ไขข้อมูลนักเรียน',s.name,s.name+'/'+s.level,n+'/'+lv)}
+  else{if(!await ask('ลบข้อมูลนักเรียน',esc(s.name)+' พร้อมรายการค่าใช้จ่ายทั้งหมดของภาคเรียนนี้'))return;const fs=await getDocs(query(collection(db,'fees'),where('studentId','==',s.id))),b=writeBatch(db);b.delete(doc(db,'students',s.id));fs.docs.forEach(d=>b.delete(d.ref));await b.commit();await log('ลบข้อมูลนักเรียน',s.name)}go('stu')}}
+/* ===== ธนาคาร + บอร์ดประชาสัมพันธ์ ===== */
+async function bank(){
+ const b=(await getDoc(doc(db,'bank','main'))).data()||{},B=(await getDocs(collection(db,'board'))).docs.map(d=>({id:d.id,...d.data()})).sort((x,y)=>(y.at?.seconds||0)-(x.at?.seconds||0));
+ $('#main').innerHTML=`<h3>ธนาคาร</h3><div class="box"><input id="an" placeholder="ชื่อบัญชี" value="${esc(b.accName)}"> <input id="bn2" placeholder="ชื่อธนาคาร" value="${esc(b.bankName)}"> <input id="ac" placeholder="เลขพร้อมเพย์ (เบอร์โทร 10 หลัก หรือเลขบัตร ปชช. 13 หลัก)" size="45" value="${esc(b.accNo)}"> <button class="bt" id="sb">บันทึก</button><p><small>ระบบหน้าบ้านจะสร้าง QR PromptPay ระบุยอดจากเลขพร้อมเพย์นี้</small></p></div>
+ <h3>บอร์ดประชาสัมพันธ์</h3><div class="box"><input type="file" id="bf" accept="image/*"> <input id="bt" size="50" placeholder="ข้อมูลเพิ่มเติม"> <button class="bt" id="ab">เพิ่มประกาศ</button><div style="display:flex;gap:14px;flex-wrap:wrap;margin-top:12px">${B.map(x=>`<div style="width:240px"><img src="${esc(x.img)}" style="width:100%;border-radius:14px"><p>${esc(x.text)}</p><button class="bt r" data-x="${x.id}">ลบ</button></div>`).join('')}</div></div>`;
+ $('#sb').onclick=async()=>{const n={accName:$('#an').value.trim(),bankName:$('#bn2').value.trim(),accNo:$('#ac').value.replace(/\D/g,'')};await setDoc(doc(db,'bank','main'),n);await log('เปลี่ยนการตั้งค่าที่สำคัญ','แก้ไขบัญชีธนาคารรับเงิน',b.accNo||null,n.accNo);alert('บันทึกแล้ว')};
+ $('#ab').onclick=async()=>{const f=$('#bf').files[0];if(!f)return alert('เลือกรูปภาพก่อน');try{await addDoc(collection(db,'board'),{img:await up(f,'board'),text:$('#bt').value,at:serverTimestamp()});await log('เปลี่ยนการตั้งค่าที่สำคัญ','เพิ่มประกาศประชาสัมพันธ์');go('bank')}catch(e){alert('อัปโหลดไม่สำเร็จ: '+e.message)}};
+ $('#main').onclick=async e=>{const x=e.target.dataset.x;if(x&&await ask('ลบประกาศ','ต้องการลบประกาศนี้'))await deleteDoc(doc(db,'board',x)),log('เปลี่ยนการตั้งค่าที่สำคัญ','ลบประกาศ '+x),go('bank')}}
+/* ===== ตรวจสอบค่าใช้จ่าย ===== */
+async function pay(){
+ const [S,F]=await Promise.all([getStu(),getFees()]),t=terms.find(x=>x.id==termId)||{};
+ const cols=[{type:'fee',month:'',l:'ค่าธรรมเนียม'},...(t.months||[]).map(m=>({type:'meal',month:m,l:m}))];
+ let mode='st',dorm=DORMS[0],q='',sel=new Set(),chg={st:{},am:{}};const fee=(sid,c)=>F.find(f=>f.studentId==sid&&f.type==c.type&&f.month==c.month);
+ $('#main').innerHTML=`<p>${termSel()} <input id="q" placeholder="ค้นหาชื่อนักเรียน"></p><div class="tabs" id="md"><button data-m="st" class="on">ตรวจสอบสถานะการจ่าย</button><button data-m="am">ตรวจสอบยอดเงินของแต่ละเดือน</button></div><div class="tabs" id="dt">${DORMS.map((d,i)=>`<button data-d="${d}" class="${i?'':'on'}">${d}</button>`).join('')}</div><div class="box" id="bk"></div><div class="box" id="tb"></div>`;
+ const draw=()=>{const R=S.filter(s=>s.dorm==dorm&&s.name.includes(q)),sOpt=v=>Object.keys(ST).map(k=>`<option value="${k}" ${k==v?'selected':''}>${ST[k][0]}</option>`).join('');
+  $('#bk').innerHTML=`<select id="bc">${cols.map((c,i)=>`<option value="${i}">${esc(c.l)}</option>`).join('')}</select> ${mode=='st'?`<select id="bv">${sOpt('')}</select>`:'<input id="bv" type="number" min="0" placeholder="ยอดเงิน">'} <button class="bt o" id="ba">ใช้กับรายการที่เลือก</button> <button class="bt" id="sa">เลือกทั้งหมด</button> <button class="bt g" id="sv">บันทึกข้อมูลที่เลือกทั้งหมด</button>`;
+  $('#tb').innerHTML=`<table><tr><th><th>ชื่อ - นามสกุล${cols.map(c=>`<th>${esc(c.l)}`).join('')}</tr>${R.map(s=>`<tr><td><input type="checkbox" class="ck" value="${s.id}" ${sel.has(s.id)?'checked':''}><td>${esc(s.name)}${cols.map(c=>{const f=fee(s.id,c);if(!f)return'<td>-';const v=chg[mode][f.id]??(mode=='st'?f.status:f.amount),hl=f.id in chg[mode]?'background:#fff3b0':'';return`<td>${mode=='st'?`<select data-f="${f.id}" style="${hl};color:${(ST[v]||ST.notdue)[1]}">${sOpt(v)}</select>`:`<input type="number" min="0" style="width:90px;${hl}" data-f="${f.id}" value="${v}">`}`}).join('')}</tr>`).join('')}</table>`;
+  $('#sa').onclick=()=>{R.forEach(s=>sel.add(s.id));draw()};
+  $('#ba').onclick=()=>{const c=cols[+$('#bc').value],v=$('#bv').value;if(v==='')return;sel.forEach(sid=>{const f=fee(sid,c);if(!f)return;const nv=mode=='st'?v:+v,o=mode=='st'?f.status:f.amount;nv==o?delete chg[mode][f.id]:chg[mode][f.id]=nv});draw()};
+  $('#tb').onchange=e=>{const el=e.target;if(el.classList.contains('ck'))return void(el.checked?sel.add(el.value):sel.delete(el.value));const id=el.dataset.f;if(!id)return;const f=F.find(x=>x.id==id),v=mode=='st'?el.value:+el.value,o=mode=='st'?f.status:f.amount;v==o?delete chg[mode][id]:chg[mode][id]=v;el.style.background=v==o?'':'#fff3b0'};
+  $('#sv').onclick=async()=>{const rows=[];for(const m of ['st','am'])for(const [id,v] of Object.entries(chg[m])){const f=F.find(x=>x.id==id);rows.push({f,m,o:m=='st'?f.status:f.amount,n:v})}
+   if(!rows.length)return alert('ไม่มีรายการที่เปลี่ยนแปลง');const late=rows.some(r=>r.m=='am'&&['paid','partial'].includes(r.f.status));
+   if(!await ask('ท่านยืนยันที่จะเปลี่ยนข้อมูลทั้งหมดที่ท่านเลือก',`<table>${rows.map(r=>`<tr><td>${esc(r.f.studentName)}<td>${esc(itemName(r.f))}<td>${r.m=='st'?ST[r.o][0]+' → '+ST[r.n][0]:r.o+' → '+r.n}`).join('')}</table>${late?'<p style="color:red">มีการแก้ไขยอดเงินย้อนหลังของรายการที่ชำระแล้ว</p>':''}`))return;
+   for(let i=0;i<rows.length;i+=200){const b=writeBatch(db);rows.slice(i,i+200).forEach(r=>b.update(doc(db,'fees',r.f.id),{[r.m=='st'?'status':'amount']:r.n,updatedBy:me.username,updatedAt:serverTimestamp()}));await b.commit()}
+   await Promise.all(rows.map(r=>log(r.m=='st'?'เปลี่ยนสถานะการชำระเงิน':'แก้ไขอัตราค่าใช้จ่าย',`${r.f.studentName} ${itemName(r.f)}`,r.o,r.n,r.m=='am'&&['paid','partial'].includes(r.f.status)?'แก้ยอดย้อนหลัง':'')));
+   rows.forEach(r=>r.f[r.m=='st'?'status':'amount']=r.n);chg={st:{},am:{}};alert('บันทึกสำเร็จ');draw()}};
+ $('#q').oninput=e=>{q=e.target.value;draw()};$('#md').onclick=e=>{if(!e.target.dataset.m)return;mode=e.target.dataset.m;document.querySelectorAll('#md button').forEach(b=>b.classList.toggle('on',b==e.target));draw()};
+ $('#dt').onclick=e=>{if(!e.target.dataset.d)return;dorm=e.target.dataset.d;sel.clear();document.querySelectorAll('#dt button').forEach(b=>b.classList.toggle('on',b==e.target));draw()};draw()}
+/* ===== สลิป ===== */
+async function slip(gal){
+ const Pm=termId?(await getDocs(query(collection(db,'payments'),where('termId','==',termId)))).docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)):[];
+ $('#main').innerHTML=`<p>${termSel()} <input id="q" placeholder="ชื่อ/รหัสนักเรียน/รหัสรายการ"> <select id="d"><option value="">ทุกประเภทหอพัก</option>${DORMS.map(d=>`<option>${d}</option>`).join('')}</select> <select id="ty"><option value="">ทุกค่าใช้จ่าย</option><option value="fee">ค่าธรรมเนียมหอพัก</option><option value="meal">ค่าอาหาร</option></select> <select id="m"><option value="">ทุกเดือน</option>${[...new Set(Pm.map(p=>p.month).filter(Boolean))].map(m=>`<option>${esc(m)}</option>`).join('')}</select> <select id="st"><option value="">ทุกสถานะ</option>${['pending','approved','rejected','need_info'].map(k=>`<option value="${k}">${{pending:'รอตรวจสอบ',approved:'อนุมัติแล้ว',rejected:'ปฏิเสธ',need_info:'ต้องการข้อมูลเพิ่มเติม'}[k]}</option>`).join('')}</select> <input type="date" id="f"> ถึง <input type="date" id="t"></p><div class="box" id="tb"></div>`;
+ const draw=()=>{const q=$('#q').value,f=$('#f').value?new Date($('#f').value).getTime():0,t=$('#t').value?new Date($('#t').value).getTime()+864e5:1e15;
+  const R=Pm.filter(p=>(p.studentName+p.studentId+p.id).includes(q)&&(!$('#d').value||p.dorm==$('#d').value)&&(!$('#ty').value||p.type==$('#ty').value)&&(!$('#m').value||p.month==$('#m').value)&&(!$('#st').value||p.status==$('#st').value)&&(p.createdAt?.seconds*1000||0)>=f&&(p.createdAt?.seconds*1000||0)<t);
+  const sl=s=>({pending:'รอตรวจสอบ',approved:'อนุมัติแล้ว',rejected:'ปฏิเสธ',need_info:'ต้องการข้อมูลเพิ่มเติม'}[s]);
+  $('#tb').innerHTML=gal?(R.length?`<div class="marq"><div class="trk">${[...R,...R].map(p=>`<div data-i="${p.id}"><img src="${esc(p.slipUrl)}" alt=""><br>${esc(p.studentName)}</div>`).join('')}</div></div>`:'ไม่พบสลิป'):`<table><tr><th>รหัส<th>ชื่อนักเรียน<th>หอพัก<th>ค่าใช้จ่าย<th>เดือน<th>ภาคเรียน<th>ส่งเมื่อ<th>สลิป<th>สถานะ<th>เจ้าหน้าที่<th></tr>${R.map(p=>`<tr><td>${p.id.slice(0,8)}<td>${esc(p.studentName)}<td>${esc(p.dorm)}<td>${p.type=='fee'?'ค่าธรรมเนียม':'ค่าอาหาร'}<td>${esc(p.month||'-')}<td>${esc(p.termLabel)}<td>${tm(p.createdAt)}<td><img src="${esc(p.slipUrl)}" height="40" alt=""><td>${sl(p.status)}<td>${esc(p.reviewer||'-')}<td><button class="bt" data-i="${p.id}">ดูรายละเอียด</button></tr>`).join('')}</table>`;
+  $('#tb').onclick=e=>{const i=e.target.closest('[data-i]')?.dataset.i,p=Pm.find(x=>x.id==i);p&&detail(p,()=>go(page))}};
+ document.querySelectorAll('#main input,#main select:not(#ts)').forEach(e=>e.oninput=draw);draw()}
+async function detail(p,done){
+ const [fs,bs,dup]=await Promise.all([getDoc(doc(db,'fees',p.feeId)),getDoc(doc(db,'bank','main')),getDocs(query(collection(db,'payments'),where('hash','==',p.hash||'-')))]),fee=fs.data()||{},bk=bs.data()||{},dups=dup.docs.filter(d=>d.id!=p.id&&d.data().groupId!=p.groupId);
+ const closed=['approved','rejected'].includes(p.status);
+ modal(`<h3>รายละเอียดสลิป ${p.id.slice(0,8)}</h3><p><b>นักเรียน:</b> ${esc(p.studentName)} (${esc(p.dorm)})<br><b>รายการ:</b> ${esc(itemName(p))} / ${esc(p.termLabel)}<br><b>ยอดที่ระบบกำหนด:</b> ${fee.amount??'-'} บาท (ชำระแล้ว ${fee.paid||0}) | <b>ยอดที่ผู้ปกครองแจ้ง:</b> ${p.amount} บาท<br><b>แจ้งชำระเมื่อ:</b> ${tm(p.createdAt)} | <b>บัญชีรับเงิน:</b> ${esc(bk.accName)} ${esc(bk.bankName)} ${esc(bk.accNo)}</p>
+ ${dups.length?`<p style="color:red">⚠ พบสลิปซ้ำกับ ${dups.length} รายการอื่น</p>`:''}<div class="zw"><img class="big" id="bi" src="${esc(p.slipUrl)}" alt="สลิป"></div><small>คลิกรูปเพื่อซูม | <a href="${esc(p.slipUrl)}" target="_blank" rel="noopener">เปิดรูปเต็ม</a></small>
+ <p><b>ประวัติการตรวจสอบ:</b><br>${(p.history||[]).map(h=>`${new Date(h.at).toLocaleString('th-TH')} — ${esc(h.by)}: ${esc(h.action)} ${esc(h.reason||'')} ${esc(h.note||'')}`).join('<br>')||'-'}</p>
+ ${closed?`<p>สถานะ: ${p.status=='approved'?'อนุมัติแล้ว':'ปฏิเสธแล้ว'} (ไม่สามารถดำเนินการซ้ำ)</p>`:`<textarea id="nt" rows="2" style="width:100%" placeholder="หมายเหตุของเจ้าหน้าที่"></textarea><p><select id="rs"><option value="">เหตุผลการปฏิเสธ</option><option>ยอดเงินไม่ตรง</option><option>สลิปไม่ชัดเจน</option><option>ข้อมูลผู้รับไม่ตรง</option><option>หลักฐานซ้ำ</option><option>อื่นๆ</option></select></p><button class="bt g" data-a="ok">อนุมัติ</button> <button class="bt r" data-a="rej">ปฏิเสธ</button> <button class="bt o" data-a="more">ขอข้อมูลเพิ่มเติม</button>`} <button class="bt o" onclick="closeM()">ปิด</button>`);
+ $('#bi').onclick=e=>e.target.classList.toggle('z');
+ document.querySelectorAll('[data-a]').forEach(btn=>btn.onclick=async()=>{const k=btn.dataset.a,note=$('#nt').value.trim(),rs=$('#rs').value;
+  if(k=='rej'&&!rs)return alert('กรุณาระบุเหตุผลการปฏิเสธ');if(k=='more'&&!note)return alert('กรุณาระบุข้อมูลที่ต้องการเพิ่มเติมในช่องหมายเหตุ');
+  const cur=(await getDoc(doc(db,'payments',p.id))).data();if(['approved','rejected'].includes(cur.status))return alert('รายการนี้ถูกดำเนินการแล้ว');
+  if(k=='ok'&&dups.some(d=>d.data().status=='approved'))return alert('สลิปนี้เคยถูกอนุมัติในรายการอื่นแล้ว ไม่สามารถอนุมัติซ้ำ');
+  if(!await ask({ok:'ยืนยันการอนุมัติ',rej:'ยืนยันการปฏิเสธ',more:'ยืนยันขอข้อมูลเพิ่มเติม'}[k],`${esc(p.studentName)} — ${esc(itemName(p))} ${p.amount} บาท`))return;
+  const b=writeBatch(db),h={by:me.username,at:Date.now(),action:k=='ok'?'อนุมัติ':k=='rej'?'ปฏิเสธ':'ขอข้อมูลเพิ่มเติม',note,reason:rs};
+  b.update(doc(db,'payments',p.id),{status:k=='ok'?'approved':k=='rej'?'rejected':'need_info',reviewer:me.username,reviewedAt:serverTimestamp(),note,reason:rs,history:arrayUnion(h)});
+  if(k=='ok'){const paid=(fee.paid||0)+p.amount;b.update(doc(db,'fees',p.feeId),{paid,status:paid>=(fee.amount||0)?'paid':'partial',updatedBy:me.username,updatedAt:serverTimestamp()})}
+  if(k=='rej')b.update(doc(db,'fees',p.feeId),{status:'rejected',updatedBy:me.username,updatedAt:serverTimestamp()});
+  await b.commit();await log(k=='ok'?'อนุมัติสลิป':k=='rej'?'ปฏิเสธสลิป':'ขอข้อมูลเพิ่มเติมสลิป',`${p.studentName} ${itemName(p)} ${p.amount} บาท`,p.status,k,rs||note);closeM();done?done():go(page)})}
+/* ===== รายงาน ===== */
+async function rep(){
+ const F=await getFees(),D=new Date();
+ $('#main').innerHTML=`<p>${termSel()} <select id="r"><option value="full">รายชื่อนักเรียนที่ชำระครบแล้ว</option><option value="debt">รายชื่อนักเรียนที่มียอดค้างชำระ</option><option value="pend">รายการรอตรวจสอบ</option><option value="fee">สรุปยอดค่าธรรมเนียมหอพัก</option><option value="meal">สรุปยอดค่าอาหารรายเดือน</option><option value="indiv">รายงานการชำระเงินรายบุคคล</option></select> <select id="d"><option value="">ทุกประเภทหอพัก</option>${DORMS.map(d=>`<option>${d}</option>`).join('')}</select> <input id="q" placeholder="ชื่อ (รายบุคคล)"></p><div class="np"><button class="bt" id="pr">พิมพ์ / บันทึกเป็น PDF</button> <button class="bt o" id="cv">ดาวน์โหลด CSV</button></div><div class="box" id="tb"></div>`;
+ let rows=[];const draw=()=>{const d=$('#d').value,q=$('#q').value,A=F.filter(f=>(!d||f.dorm==d)&&f.studentName.includes(q)),r=$('#r').value;
+  let L;if(r=='full'){const m={};A.forEach(f=>{(m[f.studentId]??={n:f.studentName,d:f.dorm,ok:true}).ok&&=f.status=='paid'});L=Object.values(m).filter(x=>x.ok).map(x=>[x.n,x.d])}
+  else L=A.filter(f=>r=='debt'?['overdue','partial'].includes(f.status):r=='pend'?f.status=='pending':r=='fee'?f.type=='fee':r=='meal'?f.type=='meal':true).map(f=>[f.studentName,f.dorm,itemName(f),f.amount,f.paid||0,Math.max(0,f.amount-(f.paid||0)),ST[f.status][0]]);
+  const H=r=='full'?['ชื่อ-นามสกุล','หอพัก']:['ชื่อ-นามสกุล','หอพัก','รายการ','ยอดที่ต้องชำระ','ยอดที่ชำระแล้ว (ยืนยัน)','คงเหลือ','สถานะ'];rows=[H,...L];
+  $('#tb').innerHTML=`<h3>${esc($('#r').selectedOptions[0].text)}</h3><p>${esc(terms.find(t=>t.id==termId)?.label||'')} | สร้างรายงานเมื่อ ${D.toLocaleString('th-TH')}</p><table><tr>${H.map(h=>`<th>${h}`).join('')}</tr>${L.map(x=>`<tr>${x.map(c=>`<td>${esc(c)}`).join('')}</tr>`).join('')}</table>${r=='full'?'':`<p><b>ยอดรับเงินที่ยืนยันแล้ว: ${L.reduce((a,x)=>a+x[4],0)} บาท</b> (ไม่รวมรายการรอตรวจสอบ/ถูกปฏิเสธ)</p>`}`};
+ document.querySelectorAll('#r,#d,#q').forEach(e=>e.oninput=draw);draw();
+ $('#pr').onclick=()=>{log('ส่งออกหรือพิมพ์รายงาน',$('#r').selectedOptions[0].text);print()};$('#cv').onclick=()=>{log('ส่งออกหรือพิมพ์รายงาน','CSV '+$('#r').selectedOptions[0].text);csv(rows,'report_'+Date.now())}}
+/* ===== สิทธิ์การเข้าถึง ===== */
+async function acc(){
+ const A=(await getDocs(collection(db,'admins'))).docs.map(d=>({id:d.id,...d.data()})),M=me.role=='master';
+ $('#main').innerHTML=`<div class="box"><h3>ระบบการจัดการบัญชีแอดมินหลังบ้าน</h3><small>เพิ่มบัญชีได้สูงสุด 10 บัญชี (เพิ่มได้เฉพาะบัญชีหลัก MASTER)</small>${M?`<p><input id="ae" placeholder="ชื่อผู้ใช้ หรืออีเมล"> <input id="ap" type="password" placeholder="รหัสผ่านเริ่มต้น (≥6)"> <input id="ad" placeholder="ฝ่าย" value="ฝ่ายดูแลระบบ"> <select id="ar"><option value="admin">ผู้ดูแล</option><option value="master">MASTER</option></select> <button class="bt" id="aa">+ เพิ่มแอดมินใหม่</button></p>`:''}
+ <table><tr><th>ลำดับ<th>ชื่อผู้ใช้งาน<th>รหัสผ่าน<th>ฝ่าย<th>บทบาท<th>สถานะ<th>การจัดการ</tr>${A.map((a,i)=>`<tr><td>${i+1}<td>${esc(a.username)}<td>*********<td>${esc(a.dept)}<td>${a.role=='master'?'บัญชีหลักสูงสุด (MASTER)':'ผู้ดูแล'}<td>${a.active?'ใช้งาน':'ปิดใช้งาน'}<td>${a.id==me.uid?'<button class="bt o" data-pw="1">เปลี่ยนรหัสผ่านของฉัน</button>':M?`<button class="bt o" data-t="${a.id}">${a.active?'ปิดใช้งาน':'เปิดใช้งาน'}</button>`:'ดู/แก้ไขได้เฉพาะบัญชีตนเอง'}</tr>`).join('')}</table></div>`;
+ if(M)$('#aa').onclick=async()=>{if(A.length>=10)return alert('เพิ่มได้สูงสุด 10 บัญชี');let e=$('#ae').value.trim();if(!e||$('#ap').value.length<6)return alert('กรอกข้อมูลให้ครบ (รหัสผ่านอย่างน้อย 6 ตัว)');if(!e.includes('@'))e+='@usk.ac.th';
+  const sa=initializeApp(cfg,'sec'+Date.now());try{const c=await createUserWithEmailAndPassword(getAuth(sa),e,$('#ap').value);await setDoc(doc(db,'admins',c.user.uid),{username:e,dept:$('#ad').value,role:$('#ar').value,active:true,createdBy:me.username});await signOut(getAuth(sa));await log('เพิ่มบัญชีแอดมิน',e)}catch(x){alert('ไม่สำเร็จ: '+x.message)}await deleteApp(sa);go('acc')};
+ $('#main').onclick=async e=>{const t=e.target.dataset.t;if(t){const a=A.find(x=>x.id==t);await updateDoc(doc(db,'admins',t),{active:!a.active});await log('เพิ่มหรือปิดใช้งานบัญชีแอดมิน',a.username,a.active,!a.active);go('acc')}
+  if(e.target.dataset.pw){const n=prompt('รหัสผ่านใหม่ (อย่างน้อย 6 ตัว)');if(!n)return;try{await updatePassword(auth.currentUser,n);await log('เปลี่ยนการตั้งค่าที่สำคัญ','เปลี่ยนรหัสผ่านตนเอง');alert('เปลี่ยนรหัสผ่านแล้ว')}catch(x){alert('กรุณาออกจากระบบแล้วเข้าสู่ระบบใหม่ก่อนเปลี่ยนรหัสผ่าน ('+x.code+')')}}}}
+/* ===== ประวัติ ===== */
+async function logs(){
+ const L=(await getDocs(query(collection(db,'logs'),orderBy('at','desc'),limit(300)))).docs.map(d=>d.data());let tab='a';
+ $('#main').innerHTML=`<div class="tabs" id="tt"><button data-t="a" class="on">ประวัติกิจกรรม</button><button data-t="i">ประวัติเข้า - ออกระบบ</button></div><div class="box" id="tb"></div><small>ประวัติเป็นแบบอ่านอย่างเดียว แอดมินไม่สามารถแก้ไขหรือลบได้ (การลบต้องดำเนินการผ่านมาสเตอร์/Firebase Console)</small>`;
+ const draw=()=>$('#tb').innerHTML=`<table><tr><th>เวลา<th>ผู้ดำเนินการ<th>การดำเนินการ<th>รายการ<th>ค่าเดิม → ค่าใหม่<th>หมายเหตุ</tr>${L.filter(x=>(x.action=='เข้าสู่ระบบ'||x.action=='ออกจากระบบ')==(tab=='i')).map(x=>`<tr><td>${tm(x.at)}<td>${esc(x.actor)}<td>${esc(x.action)}<td>${esc(x.detail)}<td>${x.old!=null||x.new!=null?esc(x.old)+' → '+esc(x.new):''}<td>${esc(x.note)}</tr>`).join('')}</table>`;
+ $('#tt').onclick=e=>{if(!e.target.dataset.t)return;tab=e.target.dataset.t;document.querySelectorAll('#tt button').forEach(b=>b.classList.toggle('on',b==e.target));draw()};draw()}
+</script></body></html>
