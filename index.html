@@ -444,12 +444,11 @@ onAuthStateChanged(auth, async u => {
   return;
  }
  try {
-  const a = await getDoc(doc(db, 'admins', u.uid));
-  if(!a.exists() || !a.data().active) throw new Error('No access');
-  S.me = { uid: u.uid, ...a.data() };
+  // ดึงแค่ข้อมูลจาก Authentication โดยตรง ไม่ต้องเช็ค Firestore แล้ว
+  S.me = { uid: u.uid, name: u.email, role: 'master', active: true };
   
-  $('mn').textContent = $('hn').textContent = S.me.name || u.email;
-  $('mr').textContent = $('hr').textContent = S.me.role === 'master' ? 'บัญชีหลักสูงสุด (MASTER)' : 'ฝ่ายดูแลระบบ';
+  $('mn').textContent = $('hn').textContent = S.me.name;
+  $('mr').textContent = $('hr').textContent = 'บัญชีหลักสูงสุด (MASTER)';
   
   $('login').hidden = true; $('app').hidden = false;
   document.body.classList.toggle('nav', innerWidth >= 1000);
@@ -473,7 +472,7 @@ onAuthStateChanged(auth, async u => {
   resetIdle();
  } catch(e) {
   await signOut(auth);
-  $('err').textContent = 'บัญชีนี้ไม่มีสิทธิ์เข้าใช้งานระบบหลังบ้าน';
+  $('err').textContent = 'เกิดข้อผิดพลาดในการเข้าสู่ระบบ';
  }
 });
 
